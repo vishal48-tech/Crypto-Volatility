@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: crypto-vol-api
+    env: python
+    repo: https://github.com/vishal48-tech/Crypto-Volatility # Replace with your actual repository URL
+    region: oregon
+    branch: main
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn app:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.12
