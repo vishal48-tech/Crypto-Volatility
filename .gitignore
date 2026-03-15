@@ -1,0 +1,26 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual environment
+venv/
+env/
+
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# Environment variables
+.env
+
+# Data files
+*.csv
+*.xlsx
+*.zip
+
+# Node modules
+node_modules/
+
+# System files
+.DS_Store
+Thumbs.db
+data/

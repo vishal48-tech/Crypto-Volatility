@@ -11,5 +11,5 @@ flask
 fastapi 
 uvicorn
 joblib
-typing
 python-multipart
+jinja2

@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Custom base styles ── */
+@layer base {
+  html { scroll-behavior: smooth; }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 99px; }
+  .dark ::-webkit-scrollbar-thumb { background: #374151; }
+}
+
+/* ── Custom component styles ── */
+@layer components {
+  .heading-highlight {
+    position: relative;
+  }
+  .heading-highlight::after {
+    content: '';
+    position: absolute;
+    bottom: 4px; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #F5A623, transparent);
+    border-radius: 2px;
+  }
+
+  .drop-icon {
+    transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .drop-zone:hover .drop-icon,
+  .drop-zone:focus .drop-icon {
+    transform: translateY(-4px);
+  }
+
+  #gauge-needle {
+    transition: left 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+/* ── Custom utility classes for JS-applied risk states ── */
+@layer utilities {
+  .risk-low {
+    @apply bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800;
+  }
+  .risk-medium {
+    @apply bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800;
+  }
+  .risk-high {
+    @apply bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800;
+  }
+}

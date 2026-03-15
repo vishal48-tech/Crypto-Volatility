@@ -1,0 +1,25 @@
+{
+  "name": "crypto-volatility",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "css:build": "tailwindcss -i ./static/input.css -o ./static/tailwind.css --minify",
+    "css:watch": "tailwindcss -i ./static/input.css -o ./static/tailwind.css --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vishal48-tech/Crypto-Volatility.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/vishal48-tech/Crypto-Volatility/issues"
+  },
+  "homepage": "https://github.com/vishal48-tech/Crypto-Volatility#readme",
+  "devDependencies": {
+    "tailwindcss": "^3.4.19"
+  }
+}

@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CryptoVol AI — Volatility Prediction</title>
+  <meta name="description" content="AI-powered crypto volatility forecasting. Upload 14 days of OHLCV data and get instant XGBoost predictions."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+
+  <!-- Prevent FOUC: apply saved theme before paint -->
+  <script>
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+
+  <!-- Tailwind CSS v3 — compiled locally, version-locked -->
+  <link rel="stylesheet" href="/static/tailwind.css"/>
+
+  <!-- All custom styles are in static/input.css, compiled into tailwind.css -->
+</head>
+
+<body class="bg-slate-50 dark:bg-[#070c1a] text-slate-900 dark:text-slate-100 font-sans antialiased transition-colors duration-300">
+
+<!-- ═══════════════ NAVBAR ═══════════════ -->
+<header id="navbar" class="sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg transition-shadow duration-300">
+  <div class="max-w-7xl mx-auto px-6 lg:px-8 h-[68px] flex items-center gap-8">
+    <a href="#" id="logo-link" class="flex items-center gap-2.5 font-bold text-[1.15rem] text-navy dark:text-white flex-shrink-0">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="8" fill="#0f2057"/><path d="M8 20L13 10L17 16L20 12" stroke="#F5A623" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="20" cy="12" r="2" fill="#F5A623"/></svg>
+      CryptoVol <span class="text-gold">AI</span>
+    </a>
+
+    <nav class="hidden md:flex gap-1 flex-1">
+      <a href="#how-it-works" class="text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-navy dark:hover:text-white px-3 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">How It Works</a>
+      <a href="#upload-section" class="text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-navy dark:hover:text-white px-3 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Predict</a>
+      <a href="#features" class="text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-navy dark:hover:text-white px-3 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Features</a>
+    </nav>
+
+    <div class="ml-auto flex items-center gap-3">
+      <!-- Theme toggle -->
+      <button id="theme-toggle" aria-label="Toggle theme" class="p-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-all">
+        <!-- Moon (shown in light mode) -->
+        <svg id="icon-moon" class="block dark:hidden w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+        <!-- Sun (shown in dark mode) -->
+        <svg id="icon-sun" class="hidden dark:block w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+      <a href="#upload-section" class="flex-shrink-0 bg-navy dark:bg-gold text-white dark:text-navy font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-navy-light dark:hover:bg-gold-light hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">Get Started</a>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<section class="relative overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-100 dark:from-[#070c1a] dark:via-[#0d1528] dark:to-[#070c1a] border-b border-slate-200 dark:border-slate-800">
+  <div class="absolute -top-24 -right-24 w-[500px] h-[500px] bg-gold/5 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="absolute -bottom-24 -left-24 w-[400px] h-[400px] bg-navy/5 dark:bg-blue-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+  <div class="max-w-7xl mx-auto px-6 lg:px-8 py-20 lg:py-28 grid grid-cols-1 lg:grid-cols-2 items-center gap-16">
+
+    <!-- Left text -->
+    <div class="animate-fade-in-up">
+      <div class="inline-flex items-center gap-2 text-xs font-semibold text-navy dark:text-blue-300 bg-navy/[0.07] dark:bg-blue-500/10 border border-navy/[0.12] dark:border-blue-500/20 px-4 py-1.5 rounded-full mb-6">
+        <span class="w-1.5 h-1.5 rounded-full bg-gold animate-pulse"></span>
+        AI-Powered · XGBoost Model
+      </div>
+
+      <h1 class="text-5xl xl:text-6xl font-extrabold text-navy dark:text-white mb-5 leading-[1.15]">
+        AI-Powered<br/>
+        <span class="text-gold heading-highlight">Volatility</span><br/>
+        Forecasting
+      </h1>
+      <p class="text-lg text-slate-500 dark:text-slate-400 max-w-md mb-9 leading-relaxed">
+        Upload 14 days of OHLCV data for any cryptocurrency and receive instant machine-learning volatility predictions — powered by XGBoost.
+      </p>
+
+      <div class="flex gap-4 mb-12 flex-wrap">
+        <a href="#upload-section" class="inline-flex items-center gap-2 bg-navy dark:bg-gold text-white dark:text-navy-dark font-semibold text-base px-7 py-3.5 rounded-2xl hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Upload CSV
+        </a>
+        <a href="#how-it-works" class="inline-flex items-center gap-2 border-2 border-slate-200 dark:border-slate-700 text-navy dark:text-slate-300 font-semibold text-base px-7 py-3.5 rounded-2xl hover:border-navy dark:hover:border-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200">
+          View Docs
+        </a>
+      </div>
+
+      <div class="flex items-center gap-6">
+        <div><div class="text-2xl font-extrabold text-navy dark:text-white">50+</div><div class="text-xs text-slate-400 font-medium uppercase tracking-widest mt-0.5">Cryptos</div></div>
+        <div class="w-px h-9 bg-slate-200 dark:bg-slate-700"></div>
+        <div><div class="text-2xl font-extrabold text-navy dark:text-white">14</div><div class="text-xs text-slate-400 font-medium uppercase tracking-widest mt-0.5">Day Window</div></div>
+        <div class="w-px h-9 bg-slate-200 dark:bg-slate-700"></div>
+        <div><div class="text-2xl font-extrabold text-navy dark:text-white">XGB</div><div class="text-xs text-slate-400 font-medium uppercase tracking-widest mt-0.5">Model</div></div>
+      </div>
+    </div>
+
+    <!-- Right preview card -->
+    <div class="hidden lg:block animate-fade-in-up [animation-delay:150ms]">
+      <div class="bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-3xl p-7 shadow-2xl dark:shadow-slate-900">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-gold to-gold-dark flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-gold/30">₿</div>
+          <div class="flex-1">
+            <div class="font-bold text-navy dark:text-white">Bitcoin</div>
+            <div class="text-xs text-slate-400">BTC · 14-day history</div>
+          </div>
+          <span class="text-xs font-bold uppercase tracking-wider bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500 px-3 py-1 rounded-full border border-slate-200 dark:border-slate-600">Sample</span>
+        </div>
+
+        <!-- Mini chart -->
+        <div class="mb-5 rounded-xl overflow-hidden bg-gradient-to-b from-blue-50 to-slate-50 dark:from-slate-900 dark:to-slate-800">
+          <svg width="100%" height="90" viewBox="0 0 320 90" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#0f2057" stop-opacity="0.2"/>
+                <stop offset="100%" stop-color="#0f2057" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <path d="M0,70 L23,60 L46,65 L69,50 L92,55 L115,40 L138,45 L161,30 L184,35 L207,20 L230,25 L253,15 L276,20 L299,10 L320,5 L320,90 L0,90 Z" fill="url(#cg)"/>
+            <path d="M0,70 L23,60 L46,65 L69,50 L92,55 L115,40 L138,45 L161,30 L184,35 L207,20 L230,25 L253,15 L276,20 L299,10 L320,5" fill="none" stroke="#0f2057" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+
+        <!-- Result preview -->
+        <div class="mb-4">
+          <div class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-1">Predicted Volatility</div>
+          <div class="text-4xl font-extrabold text-navy dark:text-gold mb-3 tabular-nums">0.0423</div>
+          <div class="h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mb-2">
+            <div class="h-full bg-green-500 rounded-full" style="width:30%"></div>
+          </div>
+          <div class="flex justify-between text-xs text-slate-400 font-medium mb-3">
+            <span class="text-green-600 dark:text-green-400 font-semibold">Low</span><span>Medium</span><span>High</span>
+          </div>
+          <span class="inline-block text-xs font-bold px-3 py-1.5 rounded-full risk-low">🟢 Low Volatility</span>
+        </div>
+
+        <div class="flex justify-between text-xs text-slate-400 border-t border-slate-100 dark:border-slate-700 pt-4">
+          <span>Rows analyzed: 14</span><span>XGBoost · just now</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ HOW IT WORKS ═══════════════ -->
+<section class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800" id="how-it-works">
+  <div class="max-w-7xl mx-auto px-6 lg:px-8 py-24">
+    <div class="text-xs font-bold uppercase tracking-[0.12em] text-gold-dark mb-2">Process</div>
+    <h2 class="text-4xl font-extrabold text-navy dark:text-white mb-3">How It Works</h2>
+    <p class="text-slate-500 dark:text-slate-400 text-lg mb-14 max-w-lg">Three simple steps from raw data to volatility insight</p>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="group p-8 border border-slate-100 dark:border-slate-800 rounded-2xl bg-slate-50 dark:bg-slate-800/40 hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
+        <div class="text-xs font-extrabold uppercase tracking-widest text-gold mb-3">01</div>
+        <div class="w-12 h-12 rounded-xl bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 flex items-center justify-center mb-5 shadow-sm">
+          <svg class="w-6 h-6 stroke-navy dark:stroke-slate-200" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <h3 class="font-bold text-navy dark:text-white text-lg mb-2">Upload CSV</h3>
+        <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Prepare a CSV with 14+ rows of daily OHLCV: <em>crypto_name, open, high, low, close, volume, marketCap, day, month, year</em>.</p>
+      </div>
+
+      <div class="group p-8 border border-slate-100 dark:border-slate-800 rounded-2xl bg-slate-50 dark:bg-slate-800/40 hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
+        <div class="text-xs font-extrabold uppercase tracking-widest text-gold mb-3">02</div>
+        <div class="w-12 h-12 rounded-xl bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 flex items-center justify-center mb-5 shadow-sm">
+          <svg class="w-6 h-6 stroke-navy dark:stroke-slate-200" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h3 class="font-bold text-navy dark:text-white text-lg mb-2">Auto Validate</h3>
+        <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">The API validates your columns, checks for missing values and ensures you have at least 14 complete rows.</p>
+      </div>
+
+      <div class="group p-8 border border-slate-100 dark:border-slate-800 rounded-2xl bg-slate-50 dark:bg-slate-800/40 hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
+        <div class="text-xs font-extrabold uppercase tracking-widest text-gold mb-3">03</div>
+        <div class="w-12 h-12 rounded-xl bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 flex items-center justify-center mb-5 shadow-sm">
+          <svg class="w-6 h-6 stroke-navy dark:stroke-slate-200" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <h3 class="font-bold text-navy dark:text-white text-lg mb-2">Get Prediction</h3>
+        <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">XGBoost runs feature engineering and outputs a volatility score with color-coded Low / Medium / High risk.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ UPLOAD SECTION ═══════════════ -->
+<section class="bg-slate-50 dark:bg-[#070c1a] border-b border-slate-200 dark:border-slate-800" id="upload-section">
+  <div class="max-w-7xl mx-auto px-6 lg:px-8 py-24 grid grid-cols-1 lg:grid-cols-2 gap-14 items-start">
+
+    <!-- Left: Upload panel -->
+    <div>
+      <div class="text-xs font-bold uppercase tracking-[0.12em] text-gold-dark mb-2">Predict</div>
+      <h2 class="text-4xl font-extrabold text-navy dark:text-white mb-3">Upload Your CSV</h2>
+      <p class="text-slate-500 dark:text-slate-400 text-lg mb-8">Drop a CSV with at least 14 rows of daily OHLCV data for a single cryptocurrency.</p>
+
+      <!-- Drop zone -->
+      <div id="drop-zone" tabindex="0" role="button" aria-label="Upload CSV"
+           class="drop-zone border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-10 text-center cursor-pointer bg-white dark:bg-slate-900/60 hover:border-gold dark:hover:border-gold hover:bg-amber-50/50 dark:hover:bg-amber-950/10 focus:border-gold focus:outline-none focus:ring-4 focus:ring-gold/20 transition-all duration-200 mb-4">
+        <div class="drop-icon flex justify-center mb-4">
+          <svg class="w-12 h-12 text-slate-300 dark:text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <div class="font-semibold text-slate-700 dark:text-slate-300 mb-1">Drop your CSV file here</div>
+        <div class="text-sm text-slate-400">or <label for="file-input" class="text-navy dark:text-gold font-semibold underline cursor-pointer hover:text-gold transition-colors">browse files</label></div>
+        <div class="text-xs text-slate-400 mt-3 font-medium">Accepts .csv only · Minimum 14 rows required</div>
+        <input type="file" id="file-input" accept=".csv" class="hidden"/>
+      </div>
+
+      <!-- File selected -->
+      <div id="file-selected" class="hidden flex items-center gap-3 p-4 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-xl mb-4">
+        <svg class="w-5 h-5 text-green-600 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <div class="flex-1 min-w-0">
+          <div id="file-selected-name" class="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">file.csv</div>
+          <div id="file-selected-size" class="text-xs text-slate-400">0 KB</div>
+        </div>
+        <button id="file-remove-btn" aria-label="Remove" class="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <!-- Error -->
+      <div id="error-box" class="hidden items-center gap-3 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl mb-4 text-red-600 dark:text-red-400 text-sm font-medium" role="alert">
+        <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="error-message">Error.</span>
+      </div>
+
+      <!-- Predict button -->
+      <button id="predict-btn" disabled
+              class="w-full flex items-center justify-center gap-2.5 bg-navy dark:bg-gold text-white dark:text-navy-dark font-bold text-base px-6 py-4 rounded-2xl hover:bg-navy-light dark:hover:bg-gold-light hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:translate-y-0 disabled:shadow-none mb-5">
+        <span id="btn-text" class="flex items-center gap-2">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Predict Volatility
+        </span>
+        <span id="btn-loading" class="hidden items-center gap-2">
+          <svg class="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"/></svg>
+          Analyzing...
+        </span>
+      </button>
+
+      <!-- CSV Help -->
+      <details class="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+        <summary class="px-4 py-3 text-sm font-semibold text-slate-500 dark:text-slate-400 cursor-pointer bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors list-none">📋 Required CSV Format</summary>
+        <div class="px-4 py-4 bg-slate-50 dark:bg-slate-800/50 text-sm border-t border-slate-200 dark:border-slate-700">
+          <p class="text-slate-500 dark:text-slate-400 mb-2">Required columns (case-sensitive):</p>
+          <code class="block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 font-mono text-xs text-navy dark:text-slate-300 mb-3 break-all">crypto_name, open, high, low, close, volume, marketCap, day, month, year</code>
+          <p class="text-slate-500 dark:text-slate-400 text-xs">All rows must have the <strong class="text-slate-700 dark:text-slate-300">same crypto_name</strong>. Minimum 14 complete rows.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Right: Result panel -->
+    <div id="result-panel" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-3xl shadow-xl dark:shadow-slate-950 overflow-hidden lg:sticky lg:top-[90px]" style="min-height:460px">
+
+      <!-- Placeholder -->
+      <div id="result-placeholder" class="flex flex-col items-center justify-center h-full p-12 text-center gap-4" style="min-height:460px">
+        <svg class="w-14 h-14 text-slate-200 dark:text-slate-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        <p class="text-slate-400 dark:text-slate-500 text-base leading-relaxed">Your prediction result<br/>will appear here</p>
+      </div>
+
+      <!-- Result content -->
+      <div id="result-content" class="hidden flex-col gap-6 p-7 h-full">
+
+        <!-- Header -->
+        <div class="flex items-center gap-4">
+          <div id="result-coin-avatar" class="w-13 h-13 w-[52px] h-[52px] rounded-2xl bg-gradient-to-br from-gold to-gold-dark flex items-center justify-center text-white font-bold text-2xl shadow-lg shadow-gold/30 flex-shrink-0">₿</div>
+          <div class="flex-1">
+            <div id="result-coin-name" class="font-bold text-navy dark:text-white text-lg">Bitcoin</div>
+            <div class="text-xs text-slate-400 mt-0.5">XGB Prediction · <span id="result-rows">14</span> rows analyzed</div>
+          </div>
+          <span class="flex items-center gap-1.5 text-xs font-bold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 px-3 py-1 rounded-full">
+            <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse inline-block"></span> Live
+          </span>
+        </div>
+
+        <!-- Score card -->
+        <div class="bg-gradient-to-br from-navy to-navy-light dark:from-slate-800 dark:to-slate-800 rounded-2xl p-6 text-center shadow-lg">
+          <div class="text-xs font-bold uppercase tracking-widest text-white/50 mb-2">Predicted Volatility Score</div>
+          <div id="vol-score-value" class="text-5xl font-extrabold text-gold tabular-nums mb-2">—</div>
+          <div class="text-xs text-white/40">Higher values indicate greater price instability</div>
+        </div>
+
+        <!-- Risk gauge -->
+        <div>
+          <div class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Risk Classification</div>
+          <div class="relative h-3 flex rounded-full overflow-visible mb-2">
+            <div class="flex-1 bg-gradient-to-r from-green-300 to-green-400 rounded-l-full"></div>
+            <div class="flex-1 bg-gradient-to-r from-yellow-300 to-amber-400"></div>
+            <div class="flex-1 bg-gradient-to-r from-red-300 to-red-400 rounded-r-full"></div>
+            <div id="gauge-needle" class="absolute -top-[3px] -bottom-[3px] w-[3px] bg-navy dark:bg-white rounded-full ring-2 ring-white dark:ring-slate-900" style="left:50%"></div>
+          </div>
+          <div class="flex justify-between text-xs font-semibold text-slate-400 mb-3">
+            <span>Low</span><span>Medium</span><span>High</span>
+          </div>
+          <div id="risk-chip-large" class="text-sm font-bold px-4 py-2 rounded-full inline-block">—</div>
+        </div>
+
+        <!-- Details grid -->
+        <div class="grid grid-cols-2 gap-px bg-slate-100 dark:bg-slate-700 rounded-xl overflow-hidden border border-slate-100 dark:border-slate-700">
+          <div class="bg-slate-50 dark:bg-slate-800 p-4"><div class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-1">Cryptocurrency</div><div id="detail-crypto" class="font-semibold text-navy dark:text-white">—</div></div>
+          <div class="bg-slate-50 dark:bg-slate-800 p-4"><div class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-1">Rows Received</div><div id="detail-rows" class="font-semibold text-navy dark:text-white">—</div></div>
+          <div class="bg-slate-50 dark:bg-slate-800 p-4"><div class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-1">Raw Score</div><div id="detail-raw" class="font-semibold text-navy dark:text-white font-mono text-sm">—</div></div>
+          <div class="bg-slate-50 dark:bg-slate-800 p-4"><div class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-1">Model</div><div class="font-semibold text-navy dark:text-white">XGBoost</div></div>
+        </div>
+
+        <button id="reset-btn" class="w-full flex items-center justify-center gap-2 border-2 border-slate-200 dark:border-slate-700 text-navy dark:text-slate-300 font-semibold py-3 rounded-2xl hover:border-navy dark:hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+          New Prediction
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ FEATURES ═══════════════ -->
+<section class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800" id="features">
+  <div class="max-w-7xl mx-auto px-6 lg:px-8 py-24">
+    <div class="text-xs font-bold uppercase tracking-[0.12em] text-gold-dark mb-2">Features</div>
+    <h2 class="text-4xl font-extrabold text-navy dark:text-white mb-14">Built for Accuracy</h2>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <!-- Feature cards -->
+      <div class="p-7 border border-slate-100 dark:border-slate-800 rounded-2xl bg-slate-50 dark:bg-slate-800/40 hover:shadow-md hover:-translate-y-1 transition-all duration-200">
+        <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center mb-5"><svg class="w-6 h-6 text-blue-600 dark:text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+        <h3 class="font-bold text-navy dark:text-white mb-2">Rolling Features</h3>
+        <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">7-day and 14-day rolling mean & std of price and returns. Captures momentum and trend patterns.</p>
+      </div>
+      <div class="p-7 border border-slate-100 dark:border-slate-800 rounded-2xl bg-slate-50 dark:bg-slate-800/40 hover:shadow-md hover:-translate-y-1 transition-all duration-200">
+        <div class="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/40 flex items-center justify-center mb-5"><svg class="w-6 h-6 text-amber-600 dark:text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+        <h3 class="font-bold text-navy dark:text-white mb-2">XGBoost Model</h3>
+        <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Gradient boosting trained on multi-coin OHLCV history optimized for volatility regression tasks.</p>
+      </div>
+      <div class="p-7 border border-slate-100 dark:border-slate-800 rounded-2xl bg-slate-50 dark:bg-slate-800/40 hover:shadow-md hover:-translate-y-1 transition-all duration-200">
+        <div class="w-12 h-12 rounded-xl bg-green-50 dark:bg-green-950/40 flex items-center justify-center mb-5"><svg class="w-6 h-6 text-green-600 dark:text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <h3 class="font-bold text-navy dark:text-white mb-2">Auto Validation</h3>
+        <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Detects missing columns, NaN rows, wrong crypto names, and insufficient data before prediction.</p>
+      </div>
+      <div class="p-7 border border-slate-100 dark:border-slate-800 rounded-2xl bg-slate-50 dark:bg-slate-800/40 hover:shadow-md hover:-translate-y-1 transition-all duration-200">
+        <div class="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-950/40 flex items-center justify-center mb-5"><svg class="w-6 h-6 text-purple-600 dark:text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg></div>
+        <h3 class="font-bold text-navy dark:text-white mb-2">Multi-Coin Support</h3>
+        <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Works with 50+ cryptocurrencies encoded in the model. Unknown coins fall back gracefully.</p>
+      </div>
+      <div class="p-7 border border-slate-100 dark:border-slate-800 rounded-2xl bg-slate-50 dark:bg-slate-800/40 hover:shadow-md hover:-translate-y-1 transition-all duration-200">
+        <div class="w-12 h-12 rounded-xl bg-red-50 dark:bg-red-950/40 flex items-center justify-center mb-5"><svg class="w-6 h-6 text-red-500 dark:text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+        <h3 class="font-bold text-navy dark:text-white mb-2">Instant Results</h3>
+        <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Feature engineering runs server-side in milliseconds. No waiting — results appear immediately.</p>
+      </div>
+      <div class="p-7 border border-slate-100 dark:border-slate-800 rounded-2xl bg-slate-50 dark:bg-slate-800/40 hover:shadow-md hover:-translate-y-1 transition-all duration-200">
+        <div class="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-950/40 flex items-center justify-center mb-5"><svg class="w-6 h-6 text-teal-600 dark:text-teal-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+        <h3 class="font-bold text-navy dark:text-white mb-2">Risk Classification</h3>
+        <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">Volatility scores bucketed into Low, Medium, or High risk categories with animated visual gauges.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<footer class="bg-navy dark:bg-slate-950">
+  <div class="max-w-7xl mx-auto px-6 lg:px-8 py-10 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-2.5 font-bold text-white">
+      <svg width="24" height="24" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="8" fill="#1a3070"/><path d="M8 20L13 10L17 16L20 12" stroke="#F5A623" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="20" cy="12" r="2" fill="#F5A623"/></svg>
+      CryptoVol AI
+    </div>
+    <p class="text-sm text-white/50">© 2026 CryptoVol AI · Built with FastAPI + XGBoost</p>
+  </div>
+</footer>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

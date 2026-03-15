@@ -5,11 +5,18 @@ import joblib
 
 import io
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from typing import List
 
-app = FastAPI()
+app = FastAPI(title="CryptoVol AI", description="Crypto Volatility Prediction API")
+
+# ── Static files & templates ──
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
 
 # -----------------------------
 # Load model, scaler, and encoder
@@ -108,45 +115,9 @@ def create_features(history: List[dict], crypto_name: str):
 # -----------------------------
 # Health check
 # -----------------------------
-@app.get("/")
-def home():
-    return {"message": "Crypto prediction API running"}
-
-# -----------------------------
-# Prediction endpoint
-# -----------------------------
-@app.post("/predict")
-def predict(data: InputData):
-
-    # Validate minimum 14 days
-    if len(data.history) < 14:
-        raise HTTPException(
-            status_code=422,
-            detail=f"At least 14 days of data are required. You provided {len(data.history)} day(s)."
-        )
-
-    # Convert history to list of dicts
-    history_dicts = [day.dict() for day in data.history]
-
-    # Feature engineering
-    df = create_features(history_dicts, data.crypto_name)
-
-    # Scale only the 15 columns
-    df[scale_cols] = scaler.transform(df[scale_cols])
-
-    # Reorder columns exactly as in training
-    df = df[feature_order]
-
-    # Take only the last row (most recent day) for prediction
-    last_row = df.tail(1)
-
-    # Create DMatrix with proper feature names
-    dmatrix = xgb.DMatrix(last_row, feature_names=list(last_row.columns))
-
-    # Predict
-    prediction = model.predict(dmatrix)
-
-    return {"prediction": prediction.tolist()}
+@app.get("/", response_class=HTMLResponse)
+def home(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 
 
 # -----------------------------
@@ -157,7 +128,7 @@ REQUIRED_CSV_COLS = ["crypto_name", "open", "high", "low", "close", "volume", "m
 # -----------------------------
 # CSV upload prediction endpoint
 # -----------------------------
-@app.post("/predict-csv")
+@app.post("/predict")
 async def predict_csv(
     file: UploadFile = File(..., description="CSV file with daily OHLCV data (must include a 'crypto_name' column)")
 ):
@@ -180,13 +151,19 @@ async def predict_csv(
                    f"Required columns: {REQUIRED_CSV_COLS}"
         )
 
-    # ── 3. Validate minimum 14 days ───────────────────────────────────────────
+    # ── 3. Drop rows with missing values in required columns ──────────────────
+    total_rows = len(df_csv)
+    df_csv = df_csv.dropna(subset=REQUIRED_CSV_COLS)
+    dropped = total_rows - len(df_csv)
+
+    # ── 4. Validate minimum 14 days (after cleaning) ──────────────────────────
     if len(df_csv) < 14:
-        raise HTTPException(
-            status_code=422,
-            detail=f"CSV must contain at least 14 days of data. "
-                   f"Provided file has only {len(df_csv)} row(s)."
+        detail_msg = (
+            f"CSV must contain at least 14 complete rows of data. "
+            f"After removing {dropped} row(s) with missing values, "
+            f"only {len(df_csv)} valid row(s) remain."
         )
+        raise HTTPException(status_code=422, detail=detail_msg)
 
     # ── 4. Extract & validate crypto_name from the CSV column ─────────────────
     crypto_names = df_csv["crypto_name"].dropna().astype(str).str.strip()
