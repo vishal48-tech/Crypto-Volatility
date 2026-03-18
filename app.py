@@ -5,7 +5,7 @@ import joblib
 
 import io
 
-from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -200,7 +200,7 @@ async def predict_csv(
     except Exception as e:
         raise HTTPException(status_code=422, detail=f"Invalid data in CSV rows: {e}")
 
-    history_dicts = [day.dict() for day in history]
+    history_dicts = [dict(day) for day in history]
 
     # ── 5. Feature engineering ────────────────────────────────────────────────
     df_feat = create_features(history_dicts, crypto_name)

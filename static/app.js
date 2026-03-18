@@ -19,6 +19,22 @@ window.addEventListener('scroll', () => {
   document.getElementById('navbar').classList.toggle('shadow-md', window.scrollY > 10);
 }, { passive: true });
 
+// ── Smooth Scrolling for Anchor Links ──────
+document.querySelectorAll('a[data-target]').forEach(anchor => {
+  anchor.addEventListener('click', function (e) {
+    e.preventDefault();
+    const targetId = this.getAttribute('data-target');
+    if (targetId && targetId !== 'top') {
+      const targetElement = document.getElementById(targetId);
+      if (targetElement) {
+        targetElement.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  });
+});
+
 // ── DOM refs ─────────────────────────────
 const dropZone          = document.getElementById('drop-zone');
 const fileInput         = document.getElementById('file-input');
